@@ -1,18 +1,14 @@
-![Chrome Extension Webpack](https://user-images.githubusercontent.com/21238816/147307879-a3cb179e-3368-412a-88db-284474183884.png)
+# Pantheon Powerup Chrome Extension
+
 Get started with Chrome extensions development using webpack, TypeScript, Sass, and more.
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/sszczep)
-
-## Announcements
-
-*Nothing to see here yet.*
 
 ## Features
 
-Chrome Extension Webpack is a simple boilerplate for fast extension development. It helps writing modern TypeScript code with SCSS support. 
+Chrome Extension Webpack is a simple boilerplate for fast extension development. It helps writing modern TypeScript code with SCSS support.
 It is meant to be lightweight and scalable, hence easily adaptable to your needs.
 
 It features:
+
 - [Chrome Extension Manifest V3](https://developer.chrome.com/docs/extensions/mv3/intro/)
 - [Webpack 5](https://webpack.js.org)
 - [TypeScript](https://www.typescriptlang.org)
@@ -20,8 +16,6 @@ It features:
 - [Babel](https://babeljs.io/)
 - [ESLint](https://eslint.org/)
 - [Prettier](https://prettier.io/)
-
-If you need React support, please check this awesome boilerplate created by [Michael Xieyang Liu](https://github.com/lxieyang): [chrome-extension-boilerplate-react](https://github.com/lxieyang/chrome-extension-boilerplate-react).
 
 ## Getting started
 
@@ -31,18 +25,19 @@ If you need React support, please check this awesome boilerplate created by [Mic
 2. Run `npm install`
 3. Run `npm run start` for development mode, `npm run build` for production build
 4. Add the extension to Chrome:
-    1. Go to `chrome://extensions/`
-    2. Enable the `Developer mode`
-    3. Click on `Load unpacked`
-    4. Choose the `dist` directory
+   1. Go to `chrome://extensions/`
+   2. Enable the `Developer mode`
+   3. Click on `Load unpacked`
+   4. Choose the `dist` directory
 5. You are good to go! You can also pin the extension to the toolbar for easy access.
 
 ### Project structure
 
 All TypeScript files are placed in `src` directory. There are few files already prepared for you:
+
 - `contentScript.ts` - the [content script](https://developer.chrome.com/docs/extensions/mv3/content_scripts/) to be run in the context of selected web pages
 - `serviceWorker.ts` - the [background script](https://developer.chrome.com/docs/extensions/mv3/service_workers/) usually used to initialize the extension and monitor events
-- `storage.ts` - little helper utility to easily manage the extension's [storage](https://developer.chrome.com/docs/extensions/reference/storage/). In this particular project we are using *synced* storage area
+- `storage.ts` - little helper utility to easily manage the extension's [storage](https://developer.chrome.com/docs/extensions/reference/storage/). In this particular project we are using _synced_ storage area
 - `popup.ts` and `options.ts` - per-page scripts
 
 Style files are placed in `styles` directory. There you can find per-page stylesheets and `common.scss` with stylings common across the pages.
@@ -57,13 +52,14 @@ Currently, there are two pages: `popup.html` and `options.html`, which can be fo
 #### Popup
 
 It's a default extension's page, visible after clicking on extension's icon in toolbar. According to the documentation:
+
 > The popup cannot be smaller than 25x25 and cannot be larger than 800x600.
 
 Read more [here](https://developer.chrome.com/docs/extensions/reference/browserAction/#popup).
 
 #### Options
 
-Options page shown by right-clicking the extension icon in the toolbar and selecting *Options*.
+Options page shown by right-clicking the extension icon in the toolbar and selecting _Options_.
 
 There are two available types of options pages: `full page` and `embedded`. By default it is set to `full page`. You can change that behaviour in the `manifest.json`:
 
@@ -134,17 +130,17 @@ interface Storage {
 
 **IMPORTANT!** Don't forget to change the interface according to your needs.
 
-*Check `src/storage.ts` for implementation details.*
+_Check `src/storage.ts` for implementation details._
 
 ### Content scripts
 
 Content scripts are files that run in the context of web pages. They live in an isolated world (private execution environment), so they do not conflict with the page or other extensions' content sripts.
 
-The content script can be *declared statically* or *programmatically injected*.
+The content script can be _declared statically_ or _programmatically injected_.
 
 #### Static declaration (match patterns)
 
-Statically declared scripts are registered in the manifest file under the `"content_scripts"` field. They all must specify corresponding [match patterns](https://developer.chrome.com/docs/extensions/mv3/match_patterns/). In this boilerplate, the content script will be injected under all URLs by default. You can change that behaviour in `manifest.json` file. 
+Statically declared scripts are registered in the manifest file under the `"content_scripts"` field. They all must specify corresponding [match patterns](https://developer.chrome.com/docs/extensions/mv3/match_patterns/). In this boilerplate, the content script will be injected under all URLs by default. You can change that behaviour in `manifest.json` file.
 
 You can edit the default content script at `src/contentScript.ts`.
 
@@ -154,7 +150,7 @@ You can also inject the scripts programmatically. It might come in handy when yo
 
 #### Adding new content script
 
-To add a new content script, create a new script file in `src` directory. You also need to create a new entry in the *webpack* config file - `webpack.common.js`:
+To add a new content script, create a new script file in `src` directory. You also need to create a new entry in the _webpack_ config file - `webpack.common.js`:
 
 ```javascript
 entry: {
@@ -170,9 +166,9 @@ entry: {
 
 In case of static declaration, you might also need to modify the manifest file.
 
-### Service worker (*old background pages*)
+### Service worker (_old background pages_)
 
-*If you are coming from Manifest V2, you might want to read this page first: [Migrating from background pages to service workers](https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/).*
+_If you are coming from Manifest V2, you might want to read this page first: [Migrating from background pages to service workers](https://developer.chrome.com/docs/extensions/mv3/migrating_to_service_workers/)._
 
 As per docs:
 

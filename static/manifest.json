@@ -1,6 +1,6 @@
 {
-  "name": "chrome-extension-webpack",
-  "description": "My basic Chrome extension",
+  "name": "Pantheon Powerup",
+  "description": "Add advanced widgets to the Pantheon dashboard.",
   "version": "0.1.0",
   "manifest_version": 3,
   "background": {
@@ -8,7 +8,10 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": [
+        "https://dashboard.pantheon.io/*",
+        "https://admin.dashboard.pantheon.io/*"
+      ],
       "js": ["contentScript.js"]
     }
   ],
@@ -18,19 +21,19 @@
     "open_in_tab": true
   },
   "action": {
-    "default_title": "My basic Chrome extension",
+    "default_title": "Pantheon Powerup",
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "/icons/16x.png",
-      "32": "/icons/32x.png",
-      "48": "/icons/48x.png",
-      "128": "/icons/128x.png"
+      "16": "/icons/16.png",
+      "32": "/icons/32.png",
+      "48": "/icons/48.png",
+      "128": "/icons/128.png"
     }
   },
   "icons": {
-    "16": "/icons/16x.png",
-    "32": "/icons/32x.png",
-    "48": "/icons/48x.png",
-    "128": "/icons/128x.png"
+    "16": "/icons/16.png",
+    "32": "/icons/32.png",
+    "48": "/icons/48.png",
+    "128": "/icons/128.png"
   }
 }

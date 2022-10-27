@@ -1,0 +1,10 @@
+{
+  "cache_hit_icon": {
+    "label": "Add Cache Metrics",
+    "value": true
+  },
+  "mysql_button": {
+    "label": "Add MySQL Connection Link",
+    "value": true
+  }
+}

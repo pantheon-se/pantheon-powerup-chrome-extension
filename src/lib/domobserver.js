@@ -54,7 +54,7 @@ export class DOMObserver {
           // Make sure the callback isn't invoked with the
           // same element more than once if repeat is false.
           if (!element.ready) {
-            if (!listener.repeat) {
+            if (listener.repeat == false) {
               element.ready = true;
             }
 

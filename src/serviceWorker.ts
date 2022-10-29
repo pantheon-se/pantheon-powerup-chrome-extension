@@ -16,3 +16,21 @@ chrome.storage.onChanged.addListener((changes) => {
     );
   }
 });
+
+// New Relic Listener
+function processConnection(message: any, sender: any, sendResponse: any) {
+  if (message?.newrelic !== undefined) {
+    fetch(message.url, message.options)
+      .then(async (resp) => {
+        if (resp.ok) {
+          sendResponse(await resp.json());
+        }
+        throw new Error(String(resp.statusText));
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }
+  return true;
+}
+chrome.runtime.onMessage.addListener(processConnection);

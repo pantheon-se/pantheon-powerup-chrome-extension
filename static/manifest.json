@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "manifest_version": 3,
   "background": {
-    "service_worker": "serviceWorker.js"
+    "service_worker": "serviceWorker.js",
+    "persistent": false
   },
   "content_scripts": [
     {
@@ -15,7 +16,20 @@
       "js": ["contentScript.js"]
     }
   ],
-  "permissions": ["storage", "scripting"],
+  "web_accessible_resources": [
+    {
+      "resources": ["webAccessibleResources.js"],
+      "matches": [
+        "https://dashboard.pantheon.io/*",
+        "https://admin.dashboard.pantheon.io/*"
+      ]
+    }
+  ],
+  "host_permissions": [
+    "https://api.newrelic.com/*",
+    "https://insights-api.newrelic.com/*"
+  ],
+  "permissions": ["storage", "scripting", "tabs"],
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true

@@ -4,26 +4,18 @@ import crel from 'crel';
  * Traffic class
  */
 export class Traffic {
-  constructor() {
+  constructor(siteId) {
     // do nothing
+    this.siteId = siteId;
   }
 
   /**
    * Add cache element to nav.
    */
   async addCacheElement(selector) {
-    // Get site ID
-    const pathArray = window.location.pathname.split('/');
-    let siteId = pathArray[2];
-    console.log(pathArray);
-    if (pathArray[1] !== 'sites') {
-      console.log('Not in site context.');
-      return false;
-    }
-
     const cacheHit = document.querySelector('#pantheon-cache-hit');
     if (!cacheHit) {
-      const data = await this.getWeeklySummary(siteId);
+      const data = await this.getWeeklySummary(this.siteId);
       const navbar = document.querySelector(selector);
       const cacheText = `Cache Ratio:  ${(data.cache_ratio * 100).toFixed(2)}%`;
       let cacheHit = crel(

@@ -20,6 +20,14 @@ export class DOMObserver {
       childList: true,
       subtree: true,
     });
+
+    this.chrome = chrome || {}; // eslint-disable-line no-undef
+
+    window.addEventListener('message', this.handleFromWeb);
+    this.injectScript(
+      this.chrome.runtime.getURL('webAccessibleResources.js'),
+      'body',
+    );
   }
 
   /**
@@ -63,6 +71,34 @@ export class DOMObserver {
           }
         }
       }
+    }
+  }
+
+  /**
+   *
+   * @param {*} filePath
+   * @param {*} tag
+   */
+  injectScript(filePath, tag) {
+    let node = document.getElementsByTagName(tag)[0];
+    let script = document.createElement('script');
+    script.setAttribute('type', 'text/javascript');
+    script.setAttribute('src', filePath);
+    script.setAttribute('id', 'inject');
+    node.appendChild(script);
+  }
+
+  /**
+   *
+   * @param {*} event
+   */
+  async handleFromWeb(event) {
+    if (event.data.from) {
+      console.log('event', event);
+      const data = event.data.data;
+      console.log('data', data);
+      window.site = {};
+      Object.assign(window.site, data);
     }
   }
 }

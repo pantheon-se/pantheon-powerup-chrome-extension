@@ -9,6 +9,7 @@ module.exports = {
   entry: {
     serviceWorker: './src/serviceWorker.ts',
     contentScript: './src/contentScript.js',
+    webAccessibleResources: './src/webAccessibleResources.js',
     popup: './src/popup.ts',
     options: './src/options.ts',
   },
@@ -22,6 +23,11 @@ module.exports = {
       {
         test: /\.(scss|css)$/,
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'],
+      },
+      {
+        test: /\.html$/i,
+        exclude: /node_modules/,
+        use: ['html-loader'],
       },
     ],
   },
@@ -49,6 +55,7 @@ module.exports = {
       startingUrl:
         'https://dashboard.pantheon.io/sites/72e163bd-0054-4332-8bf8-219c50b78581',
       autoReload: true,
+      port: 8085,
     }),
   ],
 };

@@ -1,5 +1,7 @@
 import Chart from 'chart.js/auto';
 import crel from 'crel';
+import nrTemplate from '../template/newrelic.html';
+import _ from 'lodash';
 
 /**
  * New Relic utilities
@@ -14,6 +16,7 @@ export class NewRelic {
     this.runtime = chrome.runtime; // eslint-disable-line no-undef
     this.graphql_key = 'NRAK-'; // ADD REAL ONE
     this.app = null;
+    this.metricCharts = ['web_response', 'throughput', 'host_memory', 'apdex'];
   }
 
   async getNewRelicKey(env) {
@@ -26,7 +29,9 @@ export class NewRelic {
         }
         throw new Error('Network response was not ok.');
       })
-      .catch((err) => console.error);
+      .catch((err) => {
+        console.error(err);
+      });
 
     if (Object.keys(response).length > 0) {
       Object.entries(response).forEach((data) => {
@@ -182,6 +187,11 @@ export class NewRelic {
     console.log(insights);
   }
 
+  /**
+   * Get chart data from Insights API.
+   * @param {*} qs Query string
+   * @returns
+   */
   async getInsightsApi(qs) {
     const query = encodeURIComponent(qs);
     const message = {
@@ -198,7 +208,12 @@ export class NewRelic {
     return await this.runtime.sendMessage(message);
   }
 
-  async getNewRelicChart(chart) {
+  /**
+   * Get embedded and static chart data.
+   * @param {*} chart
+   * @returns
+   */
+  async getNewRelicChartGraphql(chart) {
     const guid = btoa(`${this.account_id}|APM|APPLICATION|${this.app.id}`);
     const type = chart == 'web' ? 'AREA' : 'APDEX';
     chart = chart || 'web';
@@ -224,31 +239,81 @@ export class NewRelic {
     return await this.newrelicGraphqlRequest(body);
   }
 
+  /**
+   *
+   * @param {*} data
+   * @returns
+   */
   prepareTimeSeriesChart(data) {
     let metrics = data.metric_data.metrics[0].timeslices;
     let metric_labels = [];
     let metric_values = [];
-    metrics.forEach((metric) => {
-      metric_labels.push(metric.from);
-      metric_values.push(metric.values.average_response_time);
-    });
-
     const type = Object.keys(
       data.metric_data.metrics[0].timeslices[0].values,
     )[0];
+    metrics.forEach((metric) => {
+      metric_labels.push(metric.from);
+      metric_values.push(metric.values[type]);
+    });
+
+    console.log(type);
     const labels = {
       average_response_time: {
         label: 'Avg Response Time (ms)',
         unit: 'ms',
         title: 'Average Response Time',
+        config: {},
+      },
+      requests_per_minute: {
+        label: 'Req / min',
+        unit: '/min',
+        title: 'Throughput',
+        config: {},
+      },
+      score: {
+        label: 'Apdex Score',
+        unit: '',
+        title: 'Apdex Score',
+        config: {
+          options: {
+            scales: {
+              y: [
+                {
+                  ticks: {
+                    min: 0,
+                    max: 100,
+                    callback: function (value) {
+                      return value + '%';
+                    },
+                  },
+                  scaleLabel: {
+                    display: true,
+                    labelString: 'Percentage',
+                  },
+                },
+              ],
+              x: {
+                display: false, // Hide X axis labels
+              },
+            },
+          },
+        },
+      },
+      used_mb_by_host: {
+        label: 'Memory (Mb)',
+        unit: 'Mb',
+        title: 'Memory by Host',
+        config: {},
       },
     };
 
+    console.log(type, data);
+
     let chartContainer = crel('canvas', { class: 'traffic-chart-' + type });
-    chartContainer.style = 'max-height: 400px';
+    chartContainer.style = 'max-height: 400px, min-height: 200px';
 
     // Append access chart to container.
-    new Chart(chartContainer, {
+    const defaultConfig = {
       type: 'line',
       data: {
         labels: metric_labels,
@@ -264,10 +329,20 @@ export class NewRelic {
         maintainAspectRatio: false,
         plugins: {
           legend: false, // Hide legend
+          title: {
+            display: true,
+            text: labels[type]['title'],
+          },
+        },
+        elements: {
+          line: {
+            tension: 0.4, // smooth lines
+          },
         },
         scales: {
           y: {
             //   display: false, // Hide Y axis labels
+            min: 0,
           },
           x: {
             display: false, // Hide X axis labels
@@ -279,9 +354,101 @@ export class NewRelic {
           },
         },
       },
-    });
+    };
+    const mergedConfig = _.merge(defaultConfig, labels[type]['config']);
+    new Chart(chartContainer, mergedConfig);
 
     return chartContainer;
+  }
+
+  /**
+   *
+   * @param {*} regionSelector
+   * @param {*} env
+   */
+  async prepareChartArea(regionSelector, env) {
+    // Prepare Template space
+    const app = await this.getNewRelicApplication(env);
+    console.log(app);
+    var template = document.createElement('template');
+    template.innerHTML = nrTemplate;
+
+    // Move form button
+    const form = regionSelector.querySelector('#sso-form');
+    form.style = 'float: right;';
+    form.querySelector('button').style = 'margin-top: 22px;';
+    template.content.querySelector('#new-relic-sso-form').append(form);
+
+    // Add status health metrics
+    const statusHealth = {
+      health: {
+        value: app.health_status,
+        unit: '',
+        label: 'Site Health',
+      },
+      response_time: {
+        value: (app.application_summary.response_time / 100).toFixed(2),
+        unit: 'sec',
+        label: 'Response Time',
+      },
+      apdex_score: {
+        value: app.application_summary.apdex_score,
+        unit: '%',
+        label: 'Apdex Score',
+      },
+      throughput: {
+        value: app.application_summary.throughput,
+        unit: 'req/m',
+        label: 'Throughput',
+      },
+    };
+    for (const i in statusHealth) {
+      const itemSlot = template.content.querySelector('#new-relic-status-' + i);
+      console.log('item', itemSlot);
+
+      let text = statusHealth[i]['value'] + ' ' + statusHealth[i]['unit'];
+      if (i == 'health') {
+        let value = 'Unknown';
+        let btnClass = 'info';
+        switch (statusHealth[i]['value']) {
+          case 'green':
+            value = 'Good';
+            btnClass = 'success';
+            break;
+          case 'orange':
+          case 'yellow':
+            value = 'Unhealthy';
+            btnClass = 'warning';
+            break;
+        }
+        text = crel(
+          'p',
+          crel('button', { class: 'btn btn-' + btnClass }, value),
+        );
+      }
+      const label = crel(
+        'strong',
+        statusHealth[i]['label'],
+        crel('p', { style: 'font-size: 22px' }, text),
+      );
+      itemSlot.append(label);
+    }
+
+    // Clear out and reload template.
+    regionSelector.innerHTML = '';
+    regionSelector.append(template.content);
+
+    // Get charts / data
+    this.metricCharts.forEach(async (metric) => {
+      const metrics = await this.getApplicationMetrics(metric);
+      const chart = this.prepareTimeSeriesChart(metrics);
+      const chartHolder = document.querySelector('#new-relic-chart-' + metric);
+      chartHolder.style = 'min-height: 200px; margin-bottom: 22px;';
+      if (metric == 'web_response') {
+        chartHolder.style = 'min-height: 400px; margin-bottom: 22px;';
+      }
+      chartHolder.append(chart);
+    });
   }
 
   // async chartData() {

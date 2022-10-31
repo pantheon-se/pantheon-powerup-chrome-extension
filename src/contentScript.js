@@ -30,16 +30,12 @@ if (pathArray[1] == 'sites') {
   dob.ready('.workspace-region .tool-region .new-relic', async () => {
     const newrelic = new NewRelic(siteId);
     const envParts = window.location.hash.substring(1).split('/');
-    await newrelic.getNewRelicKey().then(async (nr) => {
-      const app = await newrelic.getNewRelicApplication(envParts[0]);
-      const metrics = await newrelic.getApplicationMetrics(app.id);
-      const chart = newrelic.prepareTimeSeriesChart(metrics);
-
-      console.log(chart);
-
-      document
-        .querySelector('.workspace-region .tool-region .new-relic')
-        .append(chart);
+    const env = envParts[0];
+    await newrelic.getNewRelicKey().then(async () => {
+      const nrRegion = document.querySelector(
+        '.workspace-region .tool-region .new-relic',
+      );
+      newrelic.prepareChartArea(nrRegion, env);
     });
   });
 } else {

@@ -38,6 +38,9 @@ if (pathArray[1] == 'sites') {
       newrelic.prepareChartArea(nrRegion, env);
     });
   });
+
+  // Add Quicksilver Logs
+  dob.ready('.workspace-region .tool-region .security-view', async () => {});
 } else {
   console.log('Not in site context.');
 }

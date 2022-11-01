@@ -44,8 +44,8 @@
     "chart.js": "^3.9.1",
     "crel": "^4.2.1",
     "lodash": "^4.17.21",
-    "normalize.css": "^8.0.1",
-    "parse5": "^7.1.1"
+    "moment-timezone": "^0.5.38",
+    "normalize.css": "^8.0.1"
   },
   "browserslist": "> 0.25%, not dead",
   "husky": {

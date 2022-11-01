@@ -17,7 +17,8 @@ export class Traffic {
     if (!cacheHit) {
       const data = await this.getWeeklySummary(this.siteId);
       const navbar = document.querySelector(selector);
-      const cacheText = `Cache Ratio:  ${(data.cache_ratio * 100).toFixed(2)}%`;
+      const cacheLabel = crel('strong', 'Cache Ratio:');
+      const cacheText = ` ${(data.cache_ratio * 100).toFixed(2)}%`;
       let cacheHit = crel(
         'span',
         {
@@ -25,6 +26,7 @@ export class Traffic {
           id: 'pantheon-cache-hit',
           style: '',
         },
+        cacheLabel,
         cacheText,
       );
       navbar.prepend(cacheHit);

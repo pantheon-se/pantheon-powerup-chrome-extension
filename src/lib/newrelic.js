@@ -2,6 +2,7 @@ import Chart from 'chart.js/auto';
 import crel from 'crel';
 import nrTemplate from '../template/newrelic.html';
 import _ from 'lodash';
+import moment from 'moment';
 
 /**
  * New Relic utilities
@@ -252,11 +253,12 @@ export class NewRelic {
       data.metric_data.metrics[0].timeslices[0].values,
     )[0];
     metrics.forEach((metric) => {
-      metric_labels.push(metric.from);
+      const labelDate = moment(metric.from).local();
+      metric_labels.push(labelDate.format('YYYY-MM-DD HH:mm:ss'));
       metric_values.push(metric.values[type]);
     });
 
-    console.log(type);
+    // Add type specific chart config based on type.
     const labels = {
       average_response_time: {
         label: 'Avg Response Time (ms)',
@@ -277,21 +279,16 @@ export class NewRelic {
         config: {
           options: {
             scales: {
-              y: [
-                {
-                  ticks: {
-                    min: 0,
-                    max: 100,
-                    callback: function (value) {
-                      return value + '%';
-                    },
-                  },
-                  scaleLabel: {
-                    display: true,
-                    labelString: 'Percentage',
+              y: {
+                min: 0,
+                max: 1,
+                ticks: {
+                  callback: function (value) {
+                    const percentage = (value * 100).toFixed(0);
+                    return percentage + '%';
                   },
                 },
-              ],
+              },
               x: {
                 display: false, // Hide X axis labels
               },
@@ -307,8 +304,7 @@ export class NewRelic {
       },
     };
 
-    console.log(type, data);
-
+    // Create ChartJS container, add some styling.
     let chartContainer = crel('canvas', { class: 'traffic-chart-' + type });
     chartContainer.style = 'max-height: 400px, min-height: 200px';
 
@@ -355,10 +351,40 @@ export class NewRelic {
         },
       },
     };
+
+    // Merge default config with type specific config (if available);
     const mergedConfig = _.merge(defaultConfig, labels[type]['config']);
+
+    // Add Chart to chart canvas element.
     new Chart(chartContainer, mergedConfig);
 
     return chartContainer;
+  }
+
+  /**
+   *
+   * @param {*} regionSelector
+   * @param {*} env
+   */
+  clearChartArea(regionSelector) {
+    var template = document.createElement('template');
+    template.innerHTML = nrTemplate;
+
+    // Move form button
+    const form = regionSelector.querySelector('#sso-form');
+    form.style = 'float: right;';
+    form.querySelector('button').style = 'margin-top: 22px;';
+    template.content.querySelector('#new-relic-sso-form').append(form);
+
+    // Add loader
+    const loader = crel('img', {
+      src: 'https://media.tenor.com/opRWIyasDH0AAAAC/snoop-dogg-dance.gif',
+    });
+    template.content.querySelector('.loader-area').append(loader);
+
+    // Clear out and reload template.
+    regionSelector.innerHTML = '';
+    regionSelector.append(template.content);
   }
 
   /**
@@ -370,14 +396,8 @@ export class NewRelic {
     // Prepare Template space
     const app = await this.getNewRelicApplication(env);
     console.log(app);
-    var template = document.createElement('template');
-    template.innerHTML = nrTemplate;
 
-    // Move form button
-    const form = regionSelector.querySelector('#sso-form');
-    form.style = 'float: right;';
-    form.querySelector('button').style = 'margin-top: 22px;';
-    template.content.querySelector('#new-relic-sso-form').append(form);
+    regionSelector.querySelector('.loader-area').innerHTML = '';
 
     // Add status health metrics
     const statusHealth = {
@@ -392,7 +412,7 @@ export class NewRelic {
         label: 'Response Time',
       },
       apdex_score: {
-        value: app.application_summary.apdex_score,
+        value: app.application_summary.apdex_score * 100,
         unit: '%',
         label: 'Apdex Score',
       },
@@ -403,7 +423,7 @@ export class NewRelic {
       },
     };
     for (const i in statusHealth) {
-      const itemSlot = template.content.querySelector('#new-relic-status-' + i);
+      const itemSlot = document.querySelector('#new-relic-status-' + i);
       console.log('item', itemSlot);
 
       let text = statusHealth[i]['value'] + ' ' + statusHealth[i]['unit'];
@@ -429,14 +449,10 @@ export class NewRelic {
       const label = crel(
         'strong',
         statusHealth[i]['label'],
-        crel('p', { style: 'font-size: 22px' }, text),
+        crel('p', { style: 'font-size: 22px; font-weight: normal;' }, text),
       );
       itemSlot.append(label);
     }
-
-    // Clear out and reload template.
-    regionSelector.innerHTML = '';
-    regionSelector.append(template.content);
 
     // Get charts / data
     this.metricCharts.forEach(async (metric) => {

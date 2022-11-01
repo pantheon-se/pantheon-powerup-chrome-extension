@@ -31,16 +31,17 @@ if (pathArray[1] == 'sites') {
     const newrelic = new NewRelic(siteId);
     const envParts = window.location.hash.substring(1).split('/');
     const env = envParts[0];
+    const nrRegion = document.querySelector(
+      '.workspace-region .tool-region .new-relic',
+    );
     await newrelic.getNewRelicKey().then(async () => {
-      const nrRegion = document.querySelector(
-        '.workspace-region .tool-region .new-relic',
-      );
+      newrelic.clearChartArea(nrRegion);
       newrelic.prepareChartArea(nrRegion, env);
     });
   });
 
   // Add Quicksilver Logs
-  dob.ready('.workspace-region .tool-region .security-view', async () => {});
+  // dob.ready('.workspace-region .tool-region .security-view', async () => {});
 } else {
   console.log('Not in site context.');
 }

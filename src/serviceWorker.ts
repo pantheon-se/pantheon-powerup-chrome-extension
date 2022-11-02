@@ -18,6 +18,7 @@ chrome.storage.onChanged.addListener((changes) => {
 });
 
 // New Relic Listener
+/* eslint-disable */
 function processConnection(message: any, sender: any, sendResponse: any) {
   if (message?.newrelic !== undefined) {
     fetch(message.url, message.options)
@@ -34,3 +35,4 @@ function processConnection(message: any, sender: any, sendResponse: any) {
   return true;
 }
 chrome.runtime.onMessage.addListener(processConnection);
+/* eslint-enable */

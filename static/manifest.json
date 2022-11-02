@@ -17,7 +17,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["webAccessibleResources.js"],
+      "resources": ["webAccessibleResources.js", "styles/contentScript.css"],
       "matches": [
         "https://dashboard.pantheon.io/*",
         "https://admin.dashboard.pantheon.io/*"

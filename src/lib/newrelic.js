@@ -376,12 +376,6 @@ export class NewRelic {
     form.querySelector('button').style = 'margin-top: 22px;';
     template.content.querySelector('#new-relic-sso-form').append(form);
 
-    // Add loader
-    const loader = crel('img', {
-      src: 'https://media.tenor.com/opRWIyasDH0AAAAC/snoop-dogg-dance.gif',
-    });
-    template.content.querySelector('.loader-area').append(loader);
-
     // Clear out and reload template.
     regionSelector.innerHTML = '';
     regionSelector.append(template.content);
@@ -398,6 +392,13 @@ export class NewRelic {
     console.log(app);
 
     regionSelector.querySelector('.loader-area').innerHTML = '';
+
+    // Skip if no application data.
+    if (app?.application_summary == undefined) {
+      document.querySelector('#new-relic-chart-web_response').innerHTML =
+        'No application data. Try sending traffic to the application.';
+      return;
+    }
 
     // Add status health metrics
     const statusHealth = {
@@ -424,8 +425,6 @@ export class NewRelic {
     };
     for (const i in statusHealth) {
       const itemSlot = document.querySelector('#new-relic-status-' + i);
-      console.log('item', itemSlot);
-
       let text = statusHealth[i]['value'] + ' ' + statusHealth[i]['unit'];
       if (i == 'health') {
         let value = 'Unknown';
@@ -440,6 +439,9 @@ export class NewRelic {
             value = 'Unhealthy';
             btnClass = 'warning';
             break;
+          case 'gray':
+            value = 'Inactive';
+            btnClass = 'disabled';
         }
         text = crel(
           'p',
@@ -451,6 +453,7 @@ export class NewRelic {
         statusHealth[i]['label'],
         crel('p', { style: 'font-size: 22px; font-weight: normal;' }, text),
       );
+      itemSlot.innerHTML = '';
       itemSlot.append(label);
     }
 

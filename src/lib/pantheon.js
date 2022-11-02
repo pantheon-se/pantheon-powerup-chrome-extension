@@ -8,39 +8,42 @@
  * @returns string
  */
 exports.getWorkflowName = (type) => {
+  let label = 'Unknown';
   switch (type) {
-    case "deploy":
-      return "Deploy";
+    case 'deploy':
+      label = 'Deploy';
       break;
-    case "deploy_product":
-      return "Create new site";
+    case 'deploy_product':
+      label = 'Create new site';
       break;
-    case "clear_cache":
-      return "Clear Cache";
+    case 'clear_cache':
+      label = 'Clear Cache';
       break;
-    case "clone_database":
-      return "Clone database";
+    case 'clone_database':
+      label = 'Clone database';
       break;
-    case "sync_code":
-    case "sync_code_with_build":
-      return "Sync code commits";
+    case 'sync_code':
+    case 'sync_code_with_build':
+      label = 'Sync code commits';
       break;
-    case "create_cloud_development_environment":
-      return "Create multidev environment";
+    case 'create_cloud_development_environment':
+      label = 'Create multidev environment';
       break;
-    case "autopilot_vrt":
-      return "Autopilot VRT";
+    case 'autopilot_vrt':
+      label = 'Autopilot VRT';
       break;
     default:
-      return "Unknown workflow";
+      label = 'Unknown workflow';
       break;
   }
+
+  return label;
 };
 
 exports.getMembershipUsers = (id) => {
   const users = window?.site?.userMemberships?.models;
   if (users !== undefined) {
-    console.debug("membership users", users);
+    console.debug('membership users', users);
     for (let i = 0; i < users.length; i++) {
       const user = users[i];
       if (user.id == id) {
@@ -49,14 +52,14 @@ exports.getMembershipUsers = (id) => {
       }
     }
   }
-  console.error(`No user found for ${id}`);
+  console.debug(`No user found for ${id}`);
   return null;
 };
 
 exports.siteNameChange = () => {
   const siteName = document.querySelector("span[class*='siteNameStyles']");
   siteName.contentEditable = true;
-  siteName.addEventListener("keypress", function (e) {
+  siteName.addEventListener('keypress', function (e) {
     var key = e.which || e.keyCode;
     if (key === 13) {
       // 13 is enter

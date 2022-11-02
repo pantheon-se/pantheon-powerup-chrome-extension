@@ -2,9 +2,19 @@ import { DOMObserver } from './lib/domobserver';
 import { Traffic } from './lib/traffic';
 import { ConnectionInfo } from './lib/connectioninfo';
 import { NewRelic } from './lib/newrelic';
+import { SiteWorkflows } from './lib/siteWorkflows';
+import crel from 'crel';
+import '../styles/contentStyle.scss';
 
 // Add DOM Observer utility and window sync.
 const dob = new DOMObserver();
+
+// Add stylesheet
+dob.injectStylesheet('styles/contentScript.css');
+
+const getEnv = () => {
+  return window.location.hash.substring(1).split('/')[0];
+};
 
 /**
  * Site Dashboard Widgets
@@ -27,21 +37,34 @@ if (pathArray[1] == 'sites') {
   });
 
   // Add New Relic
-  dob.ready('.workspace-region .tool-region .new-relic', async () => {
+  const nrSelector = '.workspace-region .tool-region .new-relic';
+  dob.ready(nrSelector, async () => {
     const newrelic = new NewRelic(siteId);
-    const envParts = window.location.hash.substring(1).split('/');
-    const env = envParts[0];
-    const nrRegion = document.querySelector(
-      '.workspace-region .tool-region .new-relic',
-    );
+    const nrRegion = document.querySelector(nrSelector);
     await newrelic.getNewRelicKey().then(async () => {
       newrelic.clearChartArea(nrRegion);
-      newrelic.prepareChartArea(nrRegion, env);
+      newrelic.prepareChartArea(nrRegion, getEnv());
     });
   });
 
+  // Update security nav
+  const secNavSelector =
+    '.workspace-region .workspace-nav a.js-environment-tools-link[data-name="security"]';
+  dob.ready(secNavSelector, () => {
+    const secIcon = crel('span', { class: 'glyphicons glyphicons-keys' });
+    const secItem = document.querySelector(secNavSelector);
+    secItem.text = ' Security & Logs';
+    secItem.prepend(secIcon);
+  });
+
   // Add Quicksilver Logs
-  // dob.ready('.workspace-region .tool-region .security-view', async () => {});
+  const securitySelector = '.workspace-region .tool-region #security-view';
+  dob.ready(securitySelector, async () => {
+    const siteworkflows = new SiteWorkflows(siteId);
+    const secRegion = document.querySelector(securitySelector);
+    siteworkflows.prepareArea(secRegion);
+    await siteworkflows.addWorkflows(secRegion);
+  });
 } else {
   console.log('Not in site context.');
 }

@@ -24,8 +24,10 @@
     "eslint": "^8.19.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-webpack-plugin": "^3.2.0",
+    "file-loader": "^6.2.0",
     "html-loader": "^4.2.0",
     "husky": "^8.0.1",
+    "imports-loader": "^4.0.1",
     "lint-staged": "^13.0.3",
     "mini-css-extract-plugin": "^2.6.1",
     "prettier": "^2.7.1",
@@ -43,9 +45,13 @@
     "async-wait-until": "^2.0.12",
     "chart.js": "^3.9.1",
     "crel": "^4.2.1",
+    "datatables.net-bs4": "^1.12.1",
+    "datatables.net-responsive": "^2.3.0",
+    "jquery": "^3.6.1",
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.38",
-    "normalize.css": "^8.0.1"
+    "normalize.css": "^8.0.1",
+    "table-builder": "^2.1.1"
   },
   "browserslist": "> 0.25%, not dead",
   "husky": {

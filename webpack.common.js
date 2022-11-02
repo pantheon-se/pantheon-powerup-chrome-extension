@@ -4,6 +4,7 @@ const ESLintPlugin = require('eslint-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const RunChromeExtension = require('webpack-run-chrome-extension');
+const webpack = require('webpack');
 
 module.exports = {
   entry: {
@@ -28,6 +29,26 @@ module.exports = {
         test: /\.html$/i,
         exclude: /node_modules/,
         use: ['html-loader'],
+      },
+      {
+        test: /datatables\.net.*.js$/,
+        use: [
+          {
+            loader: 'imports-loader',
+            options: {
+              additionalCode:
+                'var define = false; /* Disable AMD for misbehaving libraries */',
+            },
+          },
+        ],
+      },
+      {
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        exclude: /node_modules/,
+        loader: 'file-loader',
+        options: {
+          name: '/static/img/[name].[ext]',
+        },
       },
     ],
   },
@@ -56,6 +77,12 @@ module.exports = {
         'https://dashboard.pantheon.io/sites/72e163bd-0054-4332-8bf8-219c50b78581',
       autoReload: true,
       port: 8085,
+    }),
+    new webpack.ProvidePlugin({
+      $: 'jquery',
+      jQuery: 'jquery',
+      'window.jQuery': 'jquery',
+      'window.$': 'jquery',
     }),
   ],
 };

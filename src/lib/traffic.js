@@ -51,17 +51,19 @@ export class Traffic {
     return response;
   }
 
+  /**
+   *
+   * @param {*} siteId
+   * @returns
+   */
   async getWeeklySummary(siteId) {
     const data = await this.getAggregations(siteId, '14d').then((data) => {
-      console.log(data);
       return data;
     });
 
     // Process timeseries
     const lastWeek = this.processWeeklySummary(data.timeseries.slice(0, 7));
     const thisWeek = this.processWeeklySummary(data.timeseries.slice(7, 14));
-
-    console.log(thisWeek);
 
     const combinedData = {
       visits: thisWeek.visits,

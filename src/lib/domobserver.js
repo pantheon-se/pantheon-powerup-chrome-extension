@@ -36,19 +36,20 @@ export class DOMObserver {
    * @param {function} fn The callback function to run.
    * @param {boolean} repeat If the callback should run on every detection.
    */
-  ready(selector, fn, repeat) {
-    repeat = repeat ?? false;
+  ready(selector, fn) {
     console.log('selector', selector);
     // Store the selector and callback to be monitored
     window.pantheonListeners.push({
       selector: selector,
       fn: fn,
-      repeat: repeat,
     });
     // Check if the element is currently in the DOM
     this.check();
   }
 
+  /**
+   *
+   */
   check() {
     // Check the DOM for elements matching a stored selector
     let listenLenda = window.pantheonListeners?.length;
@@ -62,9 +63,7 @@ export class DOMObserver {
           // Make sure the callback isn't invoked with the
           // same element more than once if repeat is false.
           if (!element.ready) {
-            if (listener.repeat == false) {
-              element.ready = true;
-            }
+            element.ready = true;
 
             // Invoke the callback with the element
             listener.fn.call(element);
@@ -86,6 +85,14 @@ export class DOMObserver {
     script.setAttribute('src', filePath);
     script.setAttribute('id', 'inject');
     node.appendChild(script);
+  }
+
+  injectStylesheet(filename) {
+    const link = document.createElement('link');
+    link.href = chrome.runtime.getURL(filename); // eslint-disable-line no-undef
+    link.type = 'text/css';
+    link.rel = 'stylesheet';
+    document.getElementsByTagName('head')[0].appendChild(link);
   }
 
   /**

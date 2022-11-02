@@ -1,11 +1,18 @@
 const pantheon = require('./pantheon');
 const $ = require('jquery');
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 require('datatables.net-bs4')(window, $);
+require('datatables.net-buttons-bs4')(window, $);
+require('datatables.net-buttons/js/buttons.html5.js')(window, $);
 require('datatables.net-responsive')(window, $);
+require('datatables.net-bs4/css/dataTables.bootstrap4.css');
 import moment from 'moment';
 import secTemplate from '../template/security.html';
 import crel from 'crel';
 const Table = require('table-builder');
+import _ from 'lodash';
 
 /**
  * quicksilver_post_tasks
@@ -36,6 +43,9 @@ export class SiteWorkflows {
     regionSelector.append(template.content);
   }
 
+  /**
+   * Add workflows to region
+   */
   async addWorkflows() {
     await this.getWorkflowLogs().then(async () => {
       const types = {
@@ -126,8 +136,13 @@ export class SiteWorkflows {
         wf_runtime: 'Runtime',
         wf_user: 'User',
       };
-      const table = this.buildTable(workflows, headers, selector);
+      const tableSelector = selector.replace('#', '') + '-table';
+      const table = this.buildTable(workflows, headers, tableSelector);
       region.innerHTML = table;
+      $('#' + tableSelector).DataTable({
+        dom: 'Bfrtip',
+        buttons: ['copyHtml5', 'csvHtml5', 'pdfHtml5'],
+      });
     } else {
       region.append(
         crel('p', { class: 'text-center well' }, 'No logs available.'),
@@ -141,9 +156,12 @@ export class SiteWorkflows {
   attachQuicksilverWorkflows(selector) {
     const workflows = this.filterQuicksilverLogs();
     const region = document.querySelector(selector);
+    const formatRow = this.formatRow;
     region.innerHTML = '';
     if (workflows?.length && workflows.length > 0) {
+      // Prepate table data.
       const headers = {
+        control: 'dt-control',
         wf_date: 'Date',
         wf_type_name: 'Workflow',
         environment: 'Environment',
@@ -152,13 +170,99 @@ export class SiteWorkflows {
         wf_runtime: 'Runtime',
         wf_user: 'User',
       };
-      const table = this.buildTable(workflows, headers);
-      region.innerHTML = table;
+
+      const tableSelector = selector.replace('#', '') + '-table';
+      const tableId = '#' + tableSelector;
+      // const table = this.buildTable(workflows, headers, tableSelector);
+      region.innerHTML = this.tempDataTable(headers, workflows, tableSelector);
+      const dtHeaders = (headers) => {
+        let temp = [];
+        let th = {};
+        for (const h in headers) {
+          if (h == 'control') {
+            th = {
+              className: 'dt-control',
+              orderable: false,
+              data: null,
+              defaultContent: '',
+            };
+          } else {
+            th = { data: h };
+          }
+          temp.push(th);
+        }
+        return temp;
+      };
+      const table = $(tableId).DataTable({
+        dom: 'Bfrtip',
+        buttons: ['copyHtml5', 'csvHtml5', 'pdfHtml5'],
+        columns: dtHeaders(headers),
+        order: [[1, 'asc']],
+      });
+
+      // Add event listener for opening and closing details
+      $(tableId + ' tbody').on('click', 'td.dt-control', function () {
+        var tr = $(this).closest('tr');
+        var row = table.row(tr);
+
+        if (row.child.isShown()) {
+          // This row is already open - close it
+          row.child.hide();
+          tr.removeClass('shown');
+        } else {
+          // Open this row
+          row.child(formatRow(tr.data('log-output'))).show();
+          tr.addClass('shown');
+        }
+      });
     } else {
       region.append(
         crel('p', { class: 'text-center well' }, 'No logs available.'),
       );
     }
+  }
+
+  /**
+   * Generate table string
+   * @param {*} columns
+   * @param {*} id
+   * @returns
+   */
+  tempDataTable(headers, data, id) {
+    const generateTh = (columns) => {
+      let thString = '';
+      for (let i in columns) {
+        const val = columns[i];
+        if (i == 'control') {
+          thString += `<th></th>`;
+        } else {
+          thString += `<th>${val}</th>`;
+        }
+      }
+      return thString;
+    };
+    const generateRows = (headers, data) => {
+      let rows = '';
+      for (const d in data) {
+        let row = `<tr data-log-output="${data[d].log_output}"><td class="dt-control"></td>`;
+        for (const h in headers) {
+          if (h == 'control') {
+            continue;
+          }
+          row += `<td>${data[d][h]}</td>`;
+        }
+        row += `</tr>`;
+        rows += row;
+      }
+      return rows;
+    };
+
+    const table = `<table id="${id}" class="table" style="width:100%">
+    <thead><tr>${generateTh(headers)}</tr></thead>
+    <tbody>${generateRows(headers, data)}<tbody>
+    <tfoot><tr>${generateTh(headers)}</tr></tfoot>
+    </table>`;
+    return table;
   }
 
   /**
@@ -220,23 +324,28 @@ export class SiteWorkflows {
    * Generate standard HTML table.
    * @param {*} data
    * @param {*} headers
-   * @param {*} selector
+   * @param {string} selector
    * @returns
    */
   buildTable(data, headers, selector) {
-    return new Table({ class: 'table', id: selector + '-table' })
+    return new Table({ class: 'table', id: selector })
       .setHeaders(headers)
       .setData(data)
       .render();
   }
 
+  /**
+   * Format row data
+   * @param {*} d
+   * @returns
+   */
   formatRow(d) {
     // `d` is the original data object for the row
     return (
       '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">' +
       '<tr>' +
       '<td><pre>' +
-      d.log_output +
+      d +
       '</pre></td>' +
       '</tr>' +
       '</table>'

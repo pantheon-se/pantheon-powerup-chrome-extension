@@ -3,6 +3,7 @@ import { Traffic } from './lib/traffic';
 import { ConnectionInfo } from './lib/connectioninfo';
 import { NewRelic } from './lib/newrelic';
 import { SiteWorkflows } from './lib/siteWorkflows';
+import { siteNameChange } from './lib/pantheon';
 import crel from 'crel';
 import '../styles/contentStyle.scss';
 
@@ -64,6 +65,12 @@ if (pathArray[1] == 'sites') {
     const secRegion = document.querySelector(securitySelector);
     siteworkflows.prepareArea(secRegion);
     await siteworkflows.addWorkflows(secRegion);
+  });
+
+  // Add name change
+  const siteNameSelector = "span[class*='siteNameStyles']";
+  dob.ready(siteNameSelector, async () => {
+    siteNameChange();
   });
 } else {
   console.log('Not in site context.');

@@ -46,11 +46,13 @@
     "chart.js": "^3.9.1",
     "crel": "^4.2.1",
     "datatables.net-bs4": "^1.12.1",
+    "datatables.net-buttons-bs4": "^2.2.3",
     "datatables.net-responsive": "^2.3.0",
     "jquery": "^3.6.1",
     "lodash": "^4.17.21",
     "moment-timezone": "^0.5.38",
     "normalize.css": "^8.0.1",
+    "pdfmake": "^0.2.6",
     "table-builder": "^2.1.1"
   },
   "browserslist": "> 0.25%, not dead",
